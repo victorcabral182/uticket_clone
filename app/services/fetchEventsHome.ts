@@ -10,31 +10,38 @@ async function fetchEvents(
     limit?: number;
     skip?: number;
     revalidate?: number;
+    q?: string;
   } = {},
 ) {
-  const { limit = 12, skip = 0, revalidate = 60 } = options;
+  const { limit = 24, skip = 0, revalidate = 60, q } = options;
 
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/eventsearch?limit=${limit}&skip=${skip}`,
-      {
-        next: { revalidate },
-        headers: {
-          Accept: 'application/json, text/plain, */*',
-          'User-Agent': 'Mozilla/5.0 (...) Chrome/142.0.0.0 Safari/537.36',
-          Origin: 'https://uticket.com.br',
-          Referer: 'https://uticket.com.br/',
-        },
-      },
-    );
+    const url = new URL(`${process.env.NEXT_PUBLIC_API_URL}/eventsearch`);
+    url.searchParams.set('limit', limit.toString());
+    url.searchParams.set('skip', skip.toString());
 
+    console.log(q);
+
+    if (q) {
+      url.searchParams.set('q', q);
+      console.log(q);
+    }
+
+    const res = await fetch(url.toString(), {
+      next: { revalidate },
+      headers: {
+        Accept: 'application/json, text/plain, */*',
+        'User-Agent': 'Mozilla/5.0 (...) Chrome/142.0.0.0 Safari/537.36',
+        Origin: 'https://uticket.com.br',
+        Referer: 'https://uticket.com.br/',
+      },
+    });
     if (!res.ok) {
       throw new Error(`HTTP error! status: ${res.status}`);
     }
 
     const contentType = res.headers.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {
-      const text = await res.text();
       console.error('Expected JSON but got:', contentType);
       throw new Error('Response is not JSON');
     }

@@ -25,10 +25,10 @@ const EventCard = ({ event }: { event: IEvent }) => {
           width={600}
           height={150}
           quality={100}
+          loading={'lazy'}
           alt={`Capa do evento: ${event?.name}`}
-          className="w-full max-h-[150px] object-cover"
+          className={'w-full max-h-[150px] object-cover'}
           src={`https://img.uticket.com.br/event/${event?.id}/s?uniqueId=1764693736755`}
-          loading="lazy"
         />
 
         <div className="flex flex-col py-4 px-3">

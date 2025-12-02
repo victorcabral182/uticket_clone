@@ -1,15 +1,24 @@
 'use client';
 
-import React, { useState } from 'react';
-import { SearchFilterBarProps } from './types';
+import React, { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+
+interface UpdatedSearchFilterBarProps {
+  onFilterClick?: () => void;
+  filterButtonText?: string;
+  placeholderText?: string;
+}
 
 export const SearchFilterBar = ({
-  onSearch,
   onFilterClick,
   filterButtonText = 'Todas',
   placeholderText = 'Buscar evento',
-}: SearchFilterBarProps) => {
-  const [searchQuery, setSearchQuery] = useState('');
+}: UpdatedSearchFilterBarProps) => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const currentQuery = searchParams.get('q') || '';
+  const [searchQuery, setSearchQuery] = useState(currentQuery);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newQuery = event.target.value;
@@ -18,10 +27,21 @@ export const SearchFilterBar = ({
 
   const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (onSearch) {
-      onSearch(searchQuery);
+
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (searchQuery.trim()) {
+      params.set('q', searchQuery.trim());
+    } else {
+      params.delete('q');
     }
+
+    router.push(`/?${params.toString()}`);
   };
+
+  useEffect(() => {
+    setSearchQuery(currentQuery);
+  }, [currentQuery]);
 
   return (
     <div className="bg-transparent z-40">
@@ -47,7 +67,7 @@ export const SearchFilterBar = ({
           placeholder={placeholderText}
           aria-label={placeholderText}
           className="
-            flex-grow 
+           grow 
             h-full 
             px-4 
             sm:px-6 
@@ -55,17 +75,40 @@ export const SearchFilterBar = ({
             text-gray-700 
             placeholder-gray-400 
             focus:outline-none
-            // Remove o foco do botão nativo do navegador
-            // ring-0 
           "
         />
 
         <button
-          type="button" //
+          type="submit" // Mudança: Agora o botão de busca principal é o SUBMIT
+          aria-label="Buscar"
+          className="
+            hidden
+            shrink-0 
+            h-full 
+            px-6 
+            sm:px-8 
+            font-semibold 
+            text-white 
+            bg-blue-600 // Mudança de cor para destacar a ação principal
+            hover:bg-blue-700 
+            transition 
+            duration-150 
+            ease-in-out 
+            focus:outline-none 
+            focus:ring-2 
+            focus:ring-blue-600 
+            focus:ring-offset-2
+          "
+        >
+          Buscar
+        </button>
+
+        <button
+          type="button"
           onClick={onFilterClick}
           aria-label={`Filtrar por ${filterButtonText}`}
           className="
-            flex-shrink-0 
+            shrink-0 
             h-full 
             px-6 
             sm:px-8 
